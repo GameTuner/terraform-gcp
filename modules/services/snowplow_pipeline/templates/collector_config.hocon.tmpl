@@ -1,0 +1,56 @@
+collector {
+  interface = "0.0.0.0"
+  port = ${port}
+
+  streams {
+    good = "${good_topic}"
+    bad = "${bad_topic}"
+
+    sink {
+      enabled = google-pub-sub
+
+      googleProjectId = "${gcp_project_id}"
+      backoffPolicy {
+        minBackoff = 1000
+        maxBackoff = 1000
+        totalBackoff = 9223372036854
+        multiplier = 2
+        initialRpcTimeout = 10000
+        maxRpcTimeout = 10000
+        rpcTimeoutMultiplier = 2
+      }
+    }
+
+    buffer {
+      byteLimit   = 100000
+      recordLimit = 40
+      timeLimit   = 1000
+    }
+  }
+
+  telemetry {
+      disable = true
+   }
+
+  # TODO: enable this if we need metrics
+   monitoring.metrics.statsd {
+      enabled = false
+      hostname = localhost
+      port = 8125
+      period = "10 seconds"
+      # "prefix": "snowplow.collector"
+   }
+
+  preTerminationPeriod = 10 seconds
+  preTerminationUnhealthy = true
+  terminationDeadline = 10 seconds
+}
+
+akka {
+  loglevel = INFO
+  loggers = ["akka.event.slf4j.Slf4jLogger"]
+
+  http.server {
+    max-connections = 2048
+  }
+}

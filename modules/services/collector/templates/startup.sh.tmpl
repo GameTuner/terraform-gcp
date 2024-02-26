@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+
+set -o errexit -o nounset -o pipefail -o posix
+
+mkdir -p "${config_dir}"
+cat > "${config_file_path}" << EOF
+${config}
+EOF

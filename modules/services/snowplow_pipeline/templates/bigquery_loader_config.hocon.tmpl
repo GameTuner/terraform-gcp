@@ -1,0 +1,125 @@
+{
+  "projectId": "${gcp_project_id}"
+
+  "loader": {
+    "input": {
+      "type": "PubSub"
+      "subscription": "${pubsub_enricher_good_topic_sub_name}"
+    }
+
+    "output": {
+      "good": {
+        "type": "BigQuery"
+        "datasetId": "not-used"
+        "tableId": "not-used"
+      }
+      "bad": {
+        "type": "PubSub"
+        "topic": "${bad_topic}"
+      }
+      "types": {
+        "type": "PubSub"
+        "topic": "types-topic"
+      }
+      "failedInserts": {
+        "type": "PubSub"
+        "topic": "${failed_inserts_topic}"
+      }
+    }
+
+    "consumerSettings": {
+      "maxQueueSize": 1000
+      "parallelPullCount": 3
+      "maxAckExtensionPeriod": "10 seconds"
+      "awaitTerminatePeriod": "30 seconds"
+    }
+
+    "sinkSettings": {
+      "good": {
+        # For recommended number of records in each request, see https://cloud.google.com/bigquery/quotas#streaming_inserts
+        "bqWriteRequestThreshold": 500
+        "bqWriteRequestTimeout": "1 second"
+        # For the HTTP request size limit, see https://cloud.google.com/bigquery/quotas#streaminginserts
+        "bqWriteRequestSizeLimit": 10000000
+        "sinkConcurrency": 64
+      }
+
+      "bad": {
+        "producerBatchSize": 8
+        "producerDelayThreshold": "2 seconds"
+        "sinkConcurrency": 64
+      }
+
+      "types": {
+        "batchThreshold": 10
+        "batchTimeout": "30 seconds"
+        "producerBatchSize": 4
+        "producerDelayThreshold": "200 ms"
+        "sinkConcurrency": 64
+      }
+
+      "failedInserts": {
+        "producerBatchSize": 8
+        "producerDelayThreshold": "2 seconds"
+      }
+    }
+
+    # For recommended initial and max delay values, see https://cloud.google.com/bigquery/sla (Definition of "Back-off Requirements")
+    "retrySettings": {
+        "type": "BigQueryRetrySettings"
+        "initialDelay": 1 # secs
+        "delayMultiplier": 1.5
+        "maxDelay": 32 # secs
+        "totalTimeout": 5 # 5 mins gives us 30 attempts with 1 sec initial delay and 1.5 multiplier
+    }
+
+    # Maximum time to wait for graceful shutdown to complete
+    "terminationTimeout": "1 minute"
+  }
+
+  "mutator": {
+    # Observed types subscription consumed by Mutator
+    # Must be attached to the loader.output.types.topic
+    "input": {
+      "type": "PubSub"
+      "subscription": "types-sub"
+    }
+
+    "output": {
+      # Mutator will update the table to which Loader / Streamloader writes
+      "good": {
+        "type": "BigQuery"
+        "datasetId": "not-used"
+        "tableId": "not-used"
+      }
+    }
+  }
+
+  "repeater": {
+    "input": {
+      "type": "PubSub"
+      "subscription": "failed-inserts-sub"
+    }
+
+    "output": {
+      "good": {
+        "type": "BigQuery"
+        "datasetId": "not-used"
+        "tableId": "not-used"
+      }
+      "deadLetters": {
+        "type": "Gcs"
+        "bucket": "gs://dead-letter-bucket"
+      }
+    }
+  }
+
+  #"monitoring": {
+  #  "statsd": {
+  #    "hostname": "statsd.acme.gl"
+  #    "port": 1024
+  #    "tags": {}
+  #    "period": "10 min"
+  #    "prefix": "snowplow.monitoring"
+  #  }
+}

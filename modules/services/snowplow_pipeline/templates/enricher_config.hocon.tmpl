@@ -1,0 +1,41 @@
+{
+  "input": {
+    "type": "PubSub"
+    "subscription": "${pubsub_collector_good_topic_sub_id}"
+  }
+  "output": {
+    "good": {
+      "type": "PubSub"
+      "topic": "${good_topic_id}"
+      "attributes": [ "event_fingerprint" ]
+    }
+    "bad": {
+      "type": "PubSub"
+      "topic": "${bad_topic_id}"
+    }
+  }
+  "assetsUpdatePeriod": "7 days"
+  "telemetry": {
+    "disable": true
+  }
+
+  "metadataService": {
+    "appIdConfigsEndpoint": "http://${metadata_ip_address}/api/v1/apps"
+    "cacheRefreshIntervalSeconds": 10
+  }
+
+  "monitoring": {
+
+        # Optional, configure how metrics are reported
+        "metrics": {
+
+          # Optional. Log to stdout using Slf4j
+          "stdout": {
+            "period": "60 seconds"
+
+            # Optional, override the default metric prefix
+            # "prefix": "snowplow.enrich."
+          }
+        }
+      }
+}

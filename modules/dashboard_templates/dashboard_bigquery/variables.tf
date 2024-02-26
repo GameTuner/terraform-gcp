@@ -1,0 +1,3 @@
+variable "offset" {
+  type = number
+}
