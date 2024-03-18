@@ -7,6 +7,10 @@
 
 GameTuner Terraform GCP is a set of terraform environments and modules to create and manage GCP resources for GameTuner project.
 
+Below is the architecture of GameTuner solution:
+
+![gametuner-architecture](docs/img/gametuner-architecture.png)
+
 ## Requirements
 
 ### Prerequisites
@@ -100,3 +104,4 @@ GameTuner Terraform GCP is released under the [Apache 2.0 License][license].
 [currency-conversion-service]:https://openexchangerates.org/
 [slack-webhook]:https://api.slack.com/messaging/webhooks
 [license]:https://www.apache.org/licenses/LICENSE-2.0
+[gametuner-architecture]:docs/img/gametuner-architecture.png
